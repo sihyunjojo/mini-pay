@@ -29,7 +29,7 @@ public class TransferService {
 
         accountValidator.validateMainAccount(account);
 
-        account.setBalance(account.getBalance().add(amount));
+        account.deposit(amount);
         accountRepository.save(account);
 
         transactionalService.logTransaction(account.getId(), null, amount);
@@ -101,8 +101,9 @@ public class TransferService {
     // 같은 레벨의 SERIALIZABLE임에도 최대한 트랜잭션을 짧게 가져갈 수 있도록 구상해 봅시다.
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     public void executeTransfer(Account fromAccount, Account toAccount, BigDecimal amount) {
-        fromAccount.deposit(fromAccount.getBalance().subtract(amount));
-        toAccount.withdraw(toAccount.getBalance().add(amount));
+        toAccount.deposit(amount); // +
+        fromAccount.withdraw(amount); // -
+
 
         // 트랜잭션 컨텍스트에서 업데이트를 수행할 때 버전 필드가 자동으로 확인됩니다.
         transactionalService.logTransaction(fromAccount.getId(), toAccount.getId(), amount);
