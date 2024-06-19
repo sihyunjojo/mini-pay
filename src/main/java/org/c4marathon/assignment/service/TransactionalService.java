@@ -8,12 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
-
-import static org.c4marathon.assignment.util.AccountType.DAILY_CHARGING_LIMIT;
 
 @Service
 @RequiredArgsConstructor
