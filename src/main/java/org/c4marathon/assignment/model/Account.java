@@ -3,6 +3,7 @@ package org.c4marathon.assignment.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.c4marathon.assignment.util.AccountType;
 
 import java.math.BigDecimal;
 
@@ -17,9 +18,15 @@ public class Account {
     @Column(nullable = false)
     private String type;
 
+    @Column(nullable = false)
+    private String second_type = AccountType.RECURRING_SAVINGS;
+
     // 어떻게 저장이 될까?? ->
     @Column(nullable = false)
     private BigDecimal balance;
+
+    @Column
+    private BigDecimal savingBalance;
 
     @Column(nullable = false)
     private BigDecimal totalChargedInPeriod = BigDecimal.ZERO; // track daily limit
@@ -35,11 +42,19 @@ public class Account {
 
     public void deposit(BigDecimal amount) {
         this.balance = this.balance.add(amount);
+        this.totalChargedInPeriod = this.totalChargedInPeriod.add(amount);
     }
 
     public void withdraw(BigDecimal amount) {
         this.balance = this.balance.subtract(amount);
-        this.totalChargedInPeriod = this.totalChargedInPeriod.add(amount);
+    }
+
+    public boolean isRecurringSavings() {
+        return AccountType.RECURRING_SAVINGS.equals(this.second_type);
+    }
+
+    public boolean isFlexibleSavings() {
+        return AccountType.FLEXIBLE_SAVINGS.equals(this.second_type);
     }
 
     @Override
