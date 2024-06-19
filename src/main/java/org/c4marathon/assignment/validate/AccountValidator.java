@@ -5,6 +5,7 @@ import org.c4marathon.assignment.model.Account;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.c4marathon.assignment.util.AccountType.*;
 
@@ -38,6 +39,14 @@ public class AccountValidator {
 
     }
 
+    public void validateMainAccount(Optional<Account> mainAccount) {
+        if (mainAccount.isEmpty()) {
+            throw new IllegalArgumentException("Main account not found");
+        }
+        if (!mainAccount.get().getType().equals(MAIN)) {
+            throw new IllegalArgumentException("This is not a savings account");
+        }
+    }
     public void validateMainAccount(Account mainAccount) {
         if (mainAccount == null) {
             throw new IllegalArgumentException("Main account not found");
