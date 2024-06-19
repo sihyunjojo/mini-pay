@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import static org.c4marathon.assignment.util.AccountType.*;
+
 // 카카오뱅크 한달적금에서 하루라도 입금을 하지 않으면 다음과 같이 금리와 이자에 영향을 미칩니다:
 //매일 입금할 때마다 0.1%p의 우대금리가 제공됩니다. 따라서 하루라도 입금하지 않으면 그 날의 우대금리 0.1%p를 받지 못합니다.
 //5회, 10회, 15회, 20회, 25회, 31회(만기) 입금 시 추가 보너스 우대금리가 제공됩니다. 해당 회차에 입금하지 않으면 그 회차의 보너스 우대금리를 받지 못합니다.
@@ -36,13 +38,13 @@ public class InterestService {
 
 
     public void applyRecurringSavingsInterest(Account account) {
-        BigDecimal interestRate = new BigDecimal("0.05");
+        BigDecimal interestRate = new BigDecimal(RECURRING_SAVINGS_INTEREST_RATE);
         BigDecimal dailyInterest = account.getBalance().multiply(interestRate).divide(new BigDecimal("365"), RoundingMode.FLOOR);
         account.deposit(dailyInterest);
     }
 
     public void applyFlexibleSavingsInterest(Account account) {
-        BigDecimal interestRate = new BigDecimal("0.03");
+        BigDecimal interestRate = new BigDecimal(FLEXIBLE_SAVINGS_INTEREST_RATE);
         BigDecimal dailyInterest = account.getBalance().multiply(interestRate).divide(new BigDecimal("365"), RoundingMode.FLOOR);
         account.deposit(dailyInterest);
     }

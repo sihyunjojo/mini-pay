@@ -56,7 +56,6 @@ public class PendingTransactionService {
 
         Account fromAccount = pendingTransaction.getFromAccount();
         fromAccount.deposit(pendingTransaction.getAmount());
-        accountRepository.save(fromAccount);
 
         pendingTransactionRepository.delete(pendingTransaction);
     }
@@ -70,6 +69,7 @@ public class PendingTransactionService {
         }
     }
 
+    @Transactional
     public void expirePendingTransactions() {
         List<PendingTransaction> pendingTransactions = pendingTransactionRepository.findByExpiresAtBefore(LocalDateTime.now());
         for (PendingTransaction pendingTransaction : pendingTransactions) {
