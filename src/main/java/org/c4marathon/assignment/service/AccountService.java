@@ -60,8 +60,6 @@ public class AccountService {
     public void resetDailyLimits() {
         List<Account> accounts = accountRepository.findAll();
         accounts.forEach(account -> account.setTotalChargedInPeriod(BigDecimal.ZERO));
-//        accountRepository.saveAll(accounts);
-        // ?
     }
 
     private Account createAccount(User user, String type) {
