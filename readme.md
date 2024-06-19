@@ -1,3 +1,12 @@
+# Assignment - Mini-Pay
+원본 레포 주소: https://github.com/C4-ComeTrue/c4-cometrue-assignment/blob/main/assignments/mini-pay.md
+
+❗ 스터디 과제용으로 만들어보는 과제이며, 아래는 제가 만든 README가 아닙니다 ❗
+원본은 위 링크입니다. 참고해주세요
+
+<br><br>
+
+---
 # Marathon-Assignment
 
 - 취뽀컴트루 & 취준마라톤 과제 레포
@@ -6,7 +15,7 @@
 | 과제 이름 | 한 줄 설명 | 링크 |
 | -- | -- | -- |
 | My-Storage | 간단한 형태의 클라우드 스토리지를 만들어 봅시다. | [링크](assignments/my-storage.md) |
-| Mini-Pay | 기본 송금과 정산 기능이 있는 페이 서비스를 만들어 봅시다. | [링크](assignments/mini-pay.md) |
+| Mini-Pay | 기본 송금과 정산 기능이 있는 페이 서비스를 만들어 봅시다. | [링크](mini-pay.md) |
 | Accelerated To-Do | iCal 형식에 맞춘 일정을 제공하는 To-Do 서버를 개발해 봅시다. | [링크](assignments/accelerated-to-do.md) |
 | Opener-Market | 구매자와 판매자 기능이 있는 오픈마켓 서비스를 개발해 봅시다. | [링크](assignments/opener-market.md) |
 
