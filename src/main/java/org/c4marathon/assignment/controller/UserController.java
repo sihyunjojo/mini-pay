@@ -20,6 +20,7 @@ public class UserController {
         this.accountService = accountService;
     }
 
+    // 회원 등록 시, 본인의 "메인 계좌" 가 생성이 됩니다.
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
         User createdUser = userService.createUser(user);

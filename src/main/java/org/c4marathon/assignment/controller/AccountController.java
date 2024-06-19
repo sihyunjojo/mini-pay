@@ -20,7 +20,7 @@ public class AccountController {
     private final UserService userService;
 
 
-    // 적금 계좌 만들기
+    // 추가적으로, "적금 계좌" 를 생성할 수 있습니다.
     @PostMapping("/savings/{userId}")
     public ResponseEntity<Account> createSavingsAccount(@PathVariable Long userId) {
         return userService.getUserById(userId)
@@ -29,6 +29,7 @@ public class AccountController {
     }
 
     // 메인 게좌에 충전
+    // 이 계좌는 외부 계좌에서 돈을 가져오는 기능이 주 기능이므로, 금액 추가가 가능합니다.
     @PostMapping("/addMoney/{accountId}")
     public ResponseEntity<Account> addMoney(@PathVariable Long accountId, @RequestParam BigDecimal amount) {
         return accountService.findById(accountId)
@@ -37,18 +38,15 @@ public class AccountController {
     }
 
     // 적금계좌가 메인 계좌로 부터 돈을 가져옴.
+    // 이 계좌는 메인 계좌에서 돈을 인출할 수 있으며, 메인 계좌의 돈이 없으면 인출할 수 없습니다.
     @PostMapping("/deposit/{accountId}")
-    public ResponseEntity<Account> deposit(@PathVariable Long accountId, @RequestParam BigDecimal amount) {
+    public ResponseEntity<Account> addMoneyIntoSavingAccount(@PathVariable Long accountId, @RequestParam BigDecimal amount) {
         Optional<Account> accountOptional = accountService.findById(accountId);
 
         if (accountOptional.isPresent()) {
             Account account = accountOptional.get();
             transferService.depositIntoSavingsAccount(account, amount);
-            // Retrieve the updated account after the deposit
-            Optional<Account> updatedAccountOptional = accountService.findById(accountId);
-            if (updatedAccountOptional.isPresent()) {
-                return ResponseEntity.ok(updatedAccountOptional.get()); // Return HTTP 200 OK with the updated account
-            }
+            return ResponseEntity.ok(account);
         }
         return ResponseEntity.notFound().build(); // Return HTTP 404 Not Found if account not found
     }
@@ -56,6 +54,8 @@ public class AccountController {
 
     // 친구의 메인 계좌로 송금
     // 메인 계좌는 사람당 하나 씩만 있으므로 userId를 가져옴.
+    // 송금 기능을 추가합시다.
+    // 친구의 메인 계좌로 송금이 가능합니다.
     @PostMapping("/transfer/{fromUserId}/{toUserId}")
     public ResponseEntity<Void> transferMoney(@PathVariable Long fromUserId,
                                               @PathVariable Long toUserId,

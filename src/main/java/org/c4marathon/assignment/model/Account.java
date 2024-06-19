@@ -6,6 +6,7 @@ import lombok.Data;
 import org.c4marathon.assignment.util.AccountType;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Table(name = "accounts")
 @Entity
@@ -31,14 +32,27 @@ public class Account {
     @Column(nullable = false)
     private BigDecimal totalChargedInPeriod = BigDecimal.ZERO; // track daily limit
 
-    @Version
-    private Long version;
-
     //java.lang.IllegalStateException: Cannot call sendError() after the response has been committed 해결
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_to_personal_calculate_id", nullable = false)
+    private UserToPersonalCalculate userToPersonalCalculate;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "calculate_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Calculate> calculate;
+
+
+
+    @Version
+    private Long version;
+
 
     public void deposit(BigDecimal amount) {
         this.balance = this.balance.add(amount);

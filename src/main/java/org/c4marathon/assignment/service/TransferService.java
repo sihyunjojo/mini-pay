@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +27,6 @@ public class TransferService {
     @Transactional(isolation = Isolation.REPEATABLE_READ) // Ensuring consistent reads
     public Account addMoneyToMainAccount(Account account, BigDecimal amount) {
         accountValidator.validateAccountBalance(account, amount);
-
         accountValidator.validateMainAccount(account);
 
         account.deposit(amount);
@@ -40,13 +40,12 @@ public class TransferService {
     @Transactional(isolation = Isolation.REPEATABLE_READ) // Ensuring consistent reads
     public void depositIntoSavingsAccount(Account account, BigDecimal amount) {
         accountValidator.validateAccountBalance(account, amount);
-
         accountValidator.validateSavingsAccount(account);
 
-        Account mainAccount = accountRepository.findMainAccountByUserId(account.getUser().getId()).orElse(null);
+        Optional<Account> mainAccount = accountRepository.findMainAccountByUserId(account.getUser().getId());
         accountValidator.validateMainAccount(mainAccount);
 
-        executeTransfer(mainAccount, account, amount);
+        executeTransfer(mainAccount.get(), account, amount);
     }
 
     @Async
