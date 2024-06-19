@@ -55,7 +55,7 @@ public class PendingTransactionService {
                 .orElseThrow(() -> new IllegalArgumentException("Pending transaction not found"));
 
         Account fromAccount = pendingTransaction.getFromAccount();
-        fromAccount.setBalance(fromAccount.getBalance().add(pendingTransaction.getAmount()));
+        fromAccount.deposit(pendingTransaction.getAmount());
         accountRepository.save(fromAccount);
 
         pendingTransactionRepository.delete(pendingTransaction);
