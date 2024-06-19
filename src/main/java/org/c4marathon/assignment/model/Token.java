@@ -1,5 +1,6 @@
 package org.c4marathon.assignment.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -28,6 +29,7 @@ public class Token {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -35,6 +37,10 @@ public class Token {
     @Column(nullable = false, unique = true)
     private String token;
 
+    // 추후 redis 이용시 적용 가능?
+    // Package org.springframework.data.redis.core
+    // 만료 기간을 설정해주는 어노테이션
+//    @TimeToLive(unit = TimeUnit.SECONDS)
     @Column(nullable = false)
     private Date expiryDate;
 

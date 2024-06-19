@@ -31,6 +31,10 @@ public class JwtInterpreter {
         return claims.get("userId", Long.class);
     }
 
+
+
+
+
     // 강사님 코드.
 //    public String getUserId(String authorization) {
 //        Jws<Claims> claims = null;
