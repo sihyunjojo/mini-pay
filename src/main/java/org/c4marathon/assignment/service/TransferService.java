@@ -5,6 +5,7 @@ import org.c4marathon.assignment.exception.InsufficientBalanceException;
 import org.c4marathon.assignment.model.Account;
 import org.c4marathon.assignment.repository.AccountRepository;
 import org.c4marathon.assignment.validate.AccountValidator;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -48,21 +49,45 @@ public class TransferService {
         executeTransfer(mainAccount, account, amount);
     }
 
-    // write가 일어나는 트랜잭션을 분리하여서 read만 일어나는 이 로직에서는 기본 정책인 REPEATABLE_READ 정책.
-    @Transactional()
+    @Async
+    @Transactional
     public void transferMoney(Long fromUserId, Long toUserId, BigDecimal amount) {
+        boolean retry = true;
+
+        while (retry) {
+            try {
+                executeTransferWithRecharge(fromUserId, toUserId, amount);
+                retry = false; // 성공하면 반복 종료
+            } catch (InsufficientBalanceException e) {
+                retry = handleInsufficientBalanceException(fromUserId, amount);
+            }
+        }
+    }
+
+    private boolean handleInsufficientBalanceException(Long fromUserId, BigDecimal amount) {
+        // InsufficientBalanceException 발생 시 재충전 후 다시 시도
+
+        try {
+            Account fromAccount = accountRepository.findMainAccountByUserId(fromUserId)
+                    .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+            rechargeService.rechargeIncrements(amount, fromAccount);
+        }catch (IllegalArgumentException e) {
+            // 계정이 없는 경우 재시도하지 않음
+            return false;
+        }
+
+        // 재충전 이후 재시도를 위해 true를 반환 (한 번만 재시도)
+        return true;
+    }
+
+    @Transactional
+    public void executeTransferWithRecharge(Long fromUserId, Long toUserId, BigDecimal amount) throws InsufficientBalanceException {
         Account fromAccount = accountRepository.findMainAccountByUserId(fromUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
         Account toAccount = accountRepository.findMainAccountByUserId(toUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipient account not found"));
 
-        // 트랜잭션 분리하여서 짧게 가져가기
-        // 만약, 잔액이 부족하다면 10,000원 단위로 충전한 후 송금이 이루어진다.
-        try {
-            accountValidator.validateTransferAccounts(fromAccount, toAccount, amount);
-        } catch (InsufficientBalanceException e){
-            rechargeService.rechargeIncrements(amount, fromAccount);
-        }
+        accountValidator.validateTransferAccounts(fromAccount, toAccount, amount);
 
         executeTransfer(fromAccount, toAccount, amount);
     }
@@ -80,9 +105,6 @@ public class TransferService {
         toAccount.withdraw(toAccount.getBalance().add(amount));
 
         // 트랜잭션 컨텍스트에서 업데이트를 수행할 때 버전 필드가 자동으로 확인됩니다.
-        accountRepository.save(fromAccount); // 여기에서 버전을 확인하고 증가시킵니다.
-        accountRepository.save(toAccount); // 여기에서 버전을 확인하고 증가시킵니다.
-
         transactionalService.logTransaction(fromAccount.getId(), toAccount.getId(), amount);
     }
 
