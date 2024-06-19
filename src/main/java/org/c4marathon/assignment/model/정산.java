@@ -1,2 +1,4 @@
-package org.c4marathon.assignment.model;public class 정산 {
+package org.c4marathon.assignment.model;
+
+public class 정산 {
 }
