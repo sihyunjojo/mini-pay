@@ -10,14 +10,12 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import static org.c4marathon.assignment.util.AccountType.ADMIN_ACCOUNT_ID;
 
 @Service
 @RequiredArgsConstructor
 public class CalculateService {
-    private final AccountService accountService;
     private final RandomGenerator randomGenerator;
     private final AccountValidator accountValidator;
     private final TransferService transferService;
