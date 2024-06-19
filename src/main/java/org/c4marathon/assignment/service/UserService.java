@@ -34,7 +34,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<User> getUserById(Long id) {
         Optional<User> byId = userRepository.findById(id);
-        System.out.println(byId);
         return byId;
     }
 }
