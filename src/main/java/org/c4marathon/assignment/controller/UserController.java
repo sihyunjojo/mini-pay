@@ -7,11 +7,14 @@ import org.c4marathon.assignment.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
     private final AccountService accountService;
+
     public UserController(UserService userService, AccountService accountService) {
         this.userService = userService;
         this.accountService = accountService;
@@ -28,8 +31,12 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        System.out.println(id);
+        Optional<User> user = userService.getUserById(id);
+        System.out.println(user);
+        return user.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+
     }
+
 }
