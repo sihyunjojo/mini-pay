@@ -1,8 +1,6 @@
 package org.c4marathon.assignment.service;
 
-import lombok.RequiredArgsConstructor;
 import org.c4marathon.assignment.model.Account;
-import org.c4marathon.assignment.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -26,6 +24,6 @@ public class RechargeService {
             rechargeBalance = rechargeBalance.add(RECHARGE_INCREMENT);
             amountToRecharge = amountToRecharge.subtract(RECHARGE_INCREMENT);
         }
-        account.setBalance(account.getBalance().add(rechargeBalance));
+        account.deposit(rechargeBalance);
     }
 }
