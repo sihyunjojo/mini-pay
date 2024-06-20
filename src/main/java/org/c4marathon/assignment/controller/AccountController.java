@@ -23,7 +23,7 @@ public class AccountController {
     // 추가적으로, "적금 계좌" 를 생성할 수 있습니다.
     @PostMapping("/savings/{userId}")
     public ResponseEntity<Account> createSavingsAccount(@PathVariable Long userId) {
-        return userService.getUserById(userId)
+        return userService.findById(userId)
                 .map(user -> ResponseEntity.ok(accountService.createSavingsAccount(user)))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -49,18 +49,5 @@ public class AccountController {
             return ResponseEntity.ok(account);
         }
         return ResponseEntity.notFound().build(); // Return HTTP 404 Not Found if account not found
-    }
-
-
-    // 친구의 메인 계좌로 송금
-    // 메인 계좌는 사람당 하나 씩만 있으므로 userId를 가져옴.
-    // 송금 기능을 추가합시다.
-    // 친구의 메인 계좌로 송금이 가능합니다.
-    @PostMapping("/transfer/{fromUserId}/{toUserId}")
-    public ResponseEntity<Void> transferMoney(@PathVariable Long fromUserId,
-                                              @PathVariable Long toUserId,
-                                              @RequestParam BigDecimal amount) {
-        transferService.transferMoney(fromUserId, toUserId, amount);
-        return ResponseEntity.ok().build();
     }
 }

@@ -40,13 +40,13 @@ public class Account {
 
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_to_personal_calculate_id", nullable = false)
-    private UserToPersonalCalculate userToPersonalCalculate;
+    @OneToMany(mappedBy = "fromAccount", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Calculate> calculate;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "calculate_id", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Calculate> calculate;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_to_personal_calculate_id", nullable = false)
+    private AccountToPersonalCalculate accountToPersonalCalculate;
 
 
 

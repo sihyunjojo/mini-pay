@@ -1,21 +1,17 @@
 package org.c4marathon.assignment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.c4marathon.assignment.exception.InsufficientBalanceException;
 import org.c4marathon.assignment.generator.RandomGenerator;
 import org.c4marathon.assignment.model.Account;
 import org.c4marathon.assignment.model.User;
 import org.c4marathon.assignment.repository.AccountRepository;
-import org.c4marathon.assignment.util.AccountType;
 import org.c4marathon.assignment.validate.AccountValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.c4marathon.assignment.util.AccountType.*;
@@ -55,6 +51,13 @@ public class AccountService {
     public Optional<Account> findById(Long accountId) {
         return accountRepository.findById(accountId);
     }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public List<Optional<Account>> findAccountsByUserId(List<Long> accountIds) {
+        return accountRepository.findAccountsByUserId(accountIds);
+    }
+
+
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void resetDailyLimits() {

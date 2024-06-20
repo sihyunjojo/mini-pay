@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT a FROM Account a WHERE a.user.id = :userId AND a.type = 'MAIN'")
@@ -19,4 +20,12 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     default List<Account> findAllRecurringSavingsAccounts() {
         return findBySecondType(AccountType.RECURRING_SAVINGS);
     }
+
+    default List<Optional<Account>> findAccountsByUserId(List<Long> userIds) {
+        return userIds.stream()
+                .map(this::findById)
+                .toList();
+    }
+
+
 }
