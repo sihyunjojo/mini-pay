@@ -12,16 +12,17 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class TransferService {
-
     private final AccountRepository accountRepository;
     private final AccountValidator accountValidator;
     private final RechargeService rechargeService;
     private final TransactionalService transactionalService;
+    private final PendingTransactionService pendingTransactionService;
 
     // 동일한 트랜잭션 내에서 계정 잔액을 여러 번 확인하면 동일한 값을 반환하여 읽기 사이에 다른 트랜잭션에 의해 잔액이 수정될 수 있는 문제를 방지합니다.
     @Transactional(isolation = Isolation.REPEATABLE_READ) // Ensuring consistent reads
@@ -42,15 +43,35 @@ public class TransferService {
         accountValidator.validateAccountBalance(account, amount);
         accountValidator.validateSavingsAccount(account);
 
-        Optional<Account> mainAccount = accountRepository.findMainAccountByUserId(account.getUser().getId());
-        accountValidator.validateMainAccount(mainAccount);
+        Optional<Account> optionalAccount = accountRepository.findMainAccountByUserId(account.getUser().getId());
+        Account mainAccount = accountValidator.validateMainAccount(optionalAccount);
 
-        executeTransfer(mainAccount.get(), account, amount);
+        executeTransfer(mainAccount, account, amount);
     }
 
     @Async
     @Transactional
     public void transferMoney(Long fromUserId, Long toUserId, BigDecimal amount) {
+        boolean retry = true;
+
+        while (retry) {
+            try {
+                executeTransferWithRecharge(fromUserId, toUserId, amount);
+                retry = false; // 성공하면 반복 종료
+            } catch (InsufficientBalanceException e) {
+                retry = handleInsufficientBalanceException(fromUserId, amount);
+            }
+        }
+    }
+
+    @Async
+    @Transactional
+    public void pendingTransferMoney(Long pendingTransactionId) {
+        Map<String, Object> transferInformation = pendingTransactionService.getTransferInformation(pendingTransactionId);
+        Long fromUserId = (Long) transferInformation.get("fromUserId");
+        Long toUserId = (Long) transferInformation.get("toUserId");
+        BigDecimal amount = (BigDecimal) transferInformation.get("amount");
+
         boolean retry = true;
 
         while (retry) {
@@ -107,5 +128,6 @@ public class TransferService {
         // 트랜잭션 컨텍스트에서 업데이트를 수행할 때 버전 필드가 자동으로 확인됩니다.
         transactionalService.logTransaction(fromAccount.getId(), toAccount.getId(), amount);
     }
+
 
 }
