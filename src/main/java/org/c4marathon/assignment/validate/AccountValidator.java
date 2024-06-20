@@ -4,13 +4,23 @@ import org.c4marathon.assignment.exception.InsufficientBalanceException;
 import org.c4marathon.assignment.model.Account;
 import org.springframework.stereotype.Component;
 
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.c4marathon.assignment.util.AccountType.*;
 
 @Component
 public class AccountValidator {
+
+    public void validateWithdrawBalance(Account account, BigDecimal amount) {
+        validateDecimalBalance(amount);
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientBalanceException();
+        }
+    }
 
     public void validateAccountBalance(Account account, BigDecimal amount) {
         validateDecimalBalance(amount);
@@ -39,14 +49,35 @@ public class AccountValidator {
 
     }
 
-    public void validateMainAccount(Optional<Account> mainAccount) {
+    public Account validateMainAccount(Optional<Account> mainAccount) {
         if (mainAccount.isEmpty()) {
             throw new IllegalArgumentException("Main account not found");
         }
         if (!mainAccount.get().getType().equals(MAIN)) {
             throw new IllegalArgumentException("This is not a savings account");
         }
+        return mainAccount.get();
     }
+
+    public List<Account> validateMainAccounts(List<Optional<Account>> accounts) {
+        if (accounts.isEmpty()) {
+            throw new IllegalArgumentException("Main account not found");
+        }
+
+        List<Account> mainAccounts = new ArrayList<>();
+        for (Optional<Account> account : accounts) {
+            if (account.isEmpty()) {
+                throw new IllegalArgumentException("Main account not found");
+            }
+            if (!account.get().getType().equals(MAIN)) {
+                throw new IllegalArgumentException("This is not a savings account");
+            }
+
+            mainAccounts.add(account.get());
+        }
+        return mainAccounts;
+    }
+
     public void validateMainAccount(Account mainAccount) {
         if (mainAccount == null) {
             throw new IllegalArgumentException("Main account not found");
