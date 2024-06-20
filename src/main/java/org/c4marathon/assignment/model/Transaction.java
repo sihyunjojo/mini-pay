@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @NoArgsConstructor
+@Table(name = "transactions")
 @EntityListeners(TransactionListener.class)
 public class Transaction {
     @Id
