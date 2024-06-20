@@ -7,19 +7,21 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "user_to_personal_calculate")
-public class UserToPersonalCalculate {
+@Table(name = "account_to_personal_calculate")
+public class AccountToPersonalCalculate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_to_personal_calculate_id", nullable = false)
-    private UserToPersonalCalculate userToPersonalCalculate;
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account toAccount;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account toAccount;
+    @JoinColumn(name = "personal_calculates_id", nullable = false)
+    private PersonalCalculate personalCalculate;
+
+
 }

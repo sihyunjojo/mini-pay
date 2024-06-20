@@ -10,7 +10,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "personalCalculates")
+@Table(name = "personal_calculates")
 public class PersonalCalculate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +25,8 @@ public class PersonalCalculate {
     private Calculate calculate;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "user_to_personal_calculate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserToPersonalCalculate> userToPersonalCalculate;
+    @OneToMany(mappedBy = "personalCalculate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AccountToPersonalCalculate> accountToPersonalCalculate;
 
-    private BigDecimal amount;
-
+    private boolean isCalculated = false;
 }
