@@ -8,6 +8,7 @@ import org.c4marathon.assignment.repository.UserRepository;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -19,6 +20,7 @@ public class UserService {
     private final NicknameGenerator nicknameGenerator;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public User createUser(User user) {
         String name = user.getName();
         String email = user.getEmail();
@@ -32,7 +34,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> getUserById(Long id) {
+    public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
 }

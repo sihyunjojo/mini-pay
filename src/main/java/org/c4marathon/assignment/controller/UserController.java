@@ -33,7 +33,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         System.out.println(id);
-        Optional<User> user = userService.getUserById(id);
+        Optional<User> user = userService.findById(id);
         System.out.println(user);
         return user.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
