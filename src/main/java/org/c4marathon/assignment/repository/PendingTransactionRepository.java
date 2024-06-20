@@ -9,4 +9,6 @@ import java.util.List;
 public interface PendingTransactionRepository extends JpaRepository<PendingTransaction, Long> {
     List<PendingTransaction> findByExpiresAtBeforeAndRemindedFalse(LocalDateTime now);
     List<PendingTransaction> findByExpiresAtBefore(LocalDateTime now);
+    List<PendingTransaction> findByFromAccountId(Long fromAccountId);
+    List<PendingTransaction> findByToAccountId(Long toAccountId);
 }
