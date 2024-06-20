@@ -15,17 +15,22 @@ public class Calculate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private BigDecimal totalAmount;
+
+    @Column(nullable = false)
+    private String type;
+
+    // 본인은 냈음.
+    @Column(nullable = false)
+    private int numberOfIsCalculated = 1;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     private Account fromAccount;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "personal_calculate_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "calculate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PersonalCalculate> personalCalculate;
-
-    private BigDecimal totalAmount;
-    private String type; // "1/n" or "random"
-
-
 }
