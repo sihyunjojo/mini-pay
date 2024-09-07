@@ -1,8 +1,4 @@
----
-| 이름 | 한 줄 설명 | 링크 |
-| -- | -- | -- |
-| Mini-Pay | 기본 송금과 정산 기능이 있는 페이 서비스를 만들어 봅시다. | [링크](mini-pay.md) |
-
+# 기본 송금과 정산 기능이 있는 페이 서비스를 만들어 봅시다.
 
 ## Additional Requirement
 
@@ -14,6 +10,9 @@
 - 동기화
 - [Spring Batch]()
 - 낙관적 lock, 비관적 lock, 분산 lock
+
+### 자세한 과정
+[과정](mini-pay.md)
 
 # Assignment - Mini-Pay
 원본 레포 주소: https://github.com/C4-ComeTrue/c4-cometrue-assignment/blob/main/assignments/mini-pay.md
