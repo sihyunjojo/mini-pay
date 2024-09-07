@@ -8,7 +8,7 @@
     - Transaction propagation
 - Transaction Isolation Level
 - 동기화
-- [Spring Batch]()
+- [Spring Batch](https://velog.io/@plate0113/Spring-Spring-Batch%EB%9E%80)
 - 낙관적 lock, 비관적 lock, 분산 lock
 
 ### 자세한 과정
