@@ -16,17 +16,19 @@ public class PersonalCalculate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2, columnDefinition = "DECIMAL(19,2) DEFAULT 0.00")
     private BigDecimal balance;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "calculate_id", nullable = false)
-    private Calculate calculate;
+    // 정산이 완료 되었는지 확인하는 boolen
+    @Column(nullable = false)
+    private boolean isCalculated = false;
 
     @JsonIgnore
     @OneToMany(mappedBy = "personalCalculate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AccountToPersonalCalculate> accountToPersonalCalculate;
 
-    private boolean isCalculated = false;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "calculate_id", nullable = false)
+    private Calculate calculate;
 }
