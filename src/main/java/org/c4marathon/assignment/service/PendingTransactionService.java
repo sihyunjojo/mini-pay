@@ -25,7 +25,6 @@ public class PendingTransactionService {
     private final PendingTransactionRepository pendingTransactionRepository;
 
     private final TransactionalService transactionalService;
-    private final TransferService transferService;
     private final AccountService accountService;
 
     private final AccountValidator accountValidator;
@@ -57,11 +56,18 @@ public class PendingTransactionService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void completePendingTransaction(Long pendingTransactionId, String fromAccountAlias) {
+        PendingTransaction pendingTransaction = pendingTransactionRepository.findById(pendingTransactionId)
+                .orElseThrow(() -> new IllegalArgumentException("Pending transaction not found"));
+
+        pendingTransactionRepository.delete(pendingTransaction);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void completePendingTransaction(Long pendingTransactionId) {
         PendingTransaction pendingTransaction = pendingTransactionRepository.findById(pendingTransactionId)
                 .orElseThrow(() -> new IllegalArgumentException("Pending transaction not found"));
 
-        transferService.executeTransfer(pendingTransaction.getFromAccount(), pendingTransaction.getToAccount(), pendingTransaction.getAmount());
         pendingTransactionRepository.delete(pendingTransaction);
     }
 

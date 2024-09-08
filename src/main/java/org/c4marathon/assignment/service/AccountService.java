@@ -41,10 +41,19 @@ public class AccountService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Account createSavingsAccount(User user) {
-        return createAccount(user, SAVINGS);
+    public Account createFlexibleSavingAccount(User user) {
+        Account account = createAccount(user, SAVINGS);
+        account.setSecond_type(FLEXIBLE_SAVINGS);
+        return accountRepository.save(account);
     }
 
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public Account createRecurringSavingsAccount(User user, BigDecimal savingBalance) {
+        Account account = createAccount(user, SAVINGS);
+        account.setSecond_type(RECURRING_SAVINGS);
+        account.setSavingBalance(savingBalance);
+        return accountRepository.save(account);
+    }
 
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ) // Ensuring consistent reads
@@ -56,7 +65,6 @@ public class AccountService {
     public List<Optional<Account>> findAccountsByUserId(List<Long> accountIds) {
         return accountRepository.findAccountsByUserId(accountIds);
     }
-
 
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)

@@ -2,7 +2,6 @@ package org.c4marathon.assignment.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.c4marathon.assignment.model.PendingTransaction;
-import org.c4marathon.assignment.repository.PendingTransactionRepository;
 import org.c4marathon.assignment.service.PendingTransactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +14,6 @@ import java.math.BigDecimal;
 public class PendingTransactionController {
 
     private final PendingTransactionService pendingTransactionService;
-    private final PendingTransactionRepository pendingTransactionRepository;
 
     @GetMapping("/from/{fromAccountId}")
     public ResponseEntity<?> getPendingTransactionsByFrom(@PathVariable Long fromAccountId) {

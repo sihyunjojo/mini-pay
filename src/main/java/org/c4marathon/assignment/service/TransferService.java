@@ -27,26 +27,40 @@ public class TransferService {
     // 동일한 트랜잭션 내에서 계정 잔액을 여러 번 확인하면 동일한 값을 반환하여 읽기 사이에 다른 트랜잭션에 의해 잔액이 수정될 수 있는 문제를 방지합니다.
     @Transactional(isolation = Isolation.REPEATABLE_READ) // Ensuring consistent reads
     public Account addMoneyToMainAccount(Account account, BigDecimal amount) {
-        accountValidator.validateAccountBalance(account, amount);
         accountValidator.validateMainAccount(account);
 
         account.deposit(amount);
-        accountRepository.save(account);
 
-        transactionalService.logTransaction(account.getId(), null, amount);
+        // 임의의 0값 부여
+        transactionalService.logTransaction(0L, account.getId(), amount);
         return account;
     }
 
     // 읽기 작업 결과에 영향을 미칠 수 있는 다른 트랜잭션에 의해 새 행이 삽입되는 경우 해당 행이 동일한 트랜잭션 내에서 표시되지 않도록 보장하여 불일치를 방지합니다.
     @Transactional(isolation = Isolation.REPEATABLE_READ) // Ensuring consistent reads
     public void depositIntoSavingsAccount(Account account, BigDecimal amount) {
-        accountValidator.validateAccountBalance(account, amount);
         accountValidator.validateSavingsAccount(account);
 
         Optional<Account> optionalAccount = accountRepository.findMainAccountByUserId(account.getUser().getId());
         Account mainAccount = accountValidator.validateMainAccount(optionalAccount);
+        accountValidator.validateAccountBalance(mainAccount, amount);
 
         executeTransfer(mainAccount, account, amount);
+    }
+
+    @Async
+    @Transactional
+    public void transferMoney(Long fromUserId, Long toUserId, BigDecimal amount, String fromAccountAlias) {
+        boolean retry = true;
+
+        while (retry) {
+            try {
+                executeTransferByUser(fromUserId, toUserId, amount, fromAccountAlias);
+                retry = false; // 성공하면 반복 종료
+            } catch (InsufficientBalanceException e) {
+                retry = handleInsufficientBalanceException(fromUserId, amount);
+            }
+        }
     }
 
     @Async
@@ -56,7 +70,57 @@ public class TransferService {
 
         while (retry) {
             try {
-                executeTransferWithRecharge(fromUserId, toUserId, amount);
+                executeTransferByUser(fromUserId, toUserId, amount);
+                retry = false; // 성공하면 반복 종료
+            } catch (InsufficientBalanceException e) {
+                retry = handleInsufficientBalanceException(fromUserId, amount);
+            }
+        }
+    }
+
+    @Async
+    @Transactional
+    public void transferMoneyByAccountId(Long fromAccountId, Long toAccountId, BigDecimal amount, String fromAccountAlias) {
+        boolean retry = true;
+
+        while (retry) {
+            try {
+                executeTransferByAccount(fromAccountId, toAccountId, amount, fromAccountAlias);
+                retry = false; // 성공하면 반복 종료
+            } catch (InsufficientBalanceException e) {
+                retry = handleInsufficientBalanceException(fromAccountId, amount);
+            }
+        }
+    }
+
+    @Async
+    @Transactional
+    public void transferMoneyByAccountId(Long fromAccountId, Long toAccountId, BigDecimal amount) {
+        boolean retry = true;
+
+        while (retry) {
+            try {
+                executeTransferByAccount(fromAccountId, toAccountId, amount);
+                retry = false; // 성공하면 반복 종료
+            } catch (InsufficientBalanceException e) {
+                retry = handleInsufficientBalanceException(fromAccountId, amount);
+            }
+        }
+    }
+
+    @Async
+    @Transactional
+    public void pendingTransferMoney(Long pendingTransactionId, String fromAccountAlias) {
+        Map<String, Object> transferInformation = pendingTransactionService.getTransferInformation(pendingTransactionId);
+        Long fromUserId = (Long) transferInformation.get("fromUserId");
+        Long toUserId = (Long) transferInformation.get("toUserId");
+        BigDecimal amount = (BigDecimal) transferInformation.get("amount");
+
+        boolean retry = true;
+
+        while (retry) {
+            try {
+                executeTransferByUser(fromUserId, toUserId, amount, fromAccountAlias);
                 retry = false; // 성공하면 반복 종료
             } catch (InsufficientBalanceException e) {
                 retry = handleInsufficientBalanceException(fromUserId, amount);
@@ -76,7 +140,7 @@ public class TransferService {
 
         while (retry) {
             try {
-                executeTransferWithRecharge(fromUserId, toUserId, amount);
+                executeTransferByUser(fromUserId, toUserId, amount);
                 retry = false; // 성공하면 반복 종료
             } catch (InsufficientBalanceException e) {
                 retry = handleInsufficientBalanceException(fromUserId, amount);
@@ -84,14 +148,13 @@ public class TransferService {
         }
     }
 
+    // InsufficientBalanceException 발생 시 재충전 후 다시 시도
     private boolean handleInsufficientBalanceException(Long fromUserId, BigDecimal amount) {
-        // InsufficientBalanceException 발생 시 재충전 후 다시 시도
-
         try {
             Account fromAccount = accountRepository.findMainAccountByUserId(fromUserId)
                     .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
             rechargeService.rechargeIncrements(amount, fromAccount);
-        }catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // 계정이 없는 경우 재시도하지 않음
             return false;
         }
@@ -101,7 +164,43 @@ public class TransferService {
     }
 
     @Transactional
-    public void executeTransferWithRecharge(Long fromUserId, Long toUserId, BigDecimal amount) throws InsufficientBalanceException {
+    public void executeTransferByAccount(Long fromAccountId, Long toAccountId, BigDecimal amount, String fromAccountAlias) throws InsufficientBalanceException {
+        Account fromAccount = accountRepository.findById(fromAccountId)
+                .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+        Account toAccount = accountRepository.findById(toAccountId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipient account not found"));
+
+        accountValidator.validateTransferAccounts(fromAccount, toAccount, amount);
+
+        executeTransfer(fromAccount, toAccount, amount, fromAccountAlias);
+    }
+
+    @Transactional
+    public void executeTransferByAccount(Long fromAccountId, Long toAccountId, BigDecimal amount) throws InsufficientBalanceException {
+        Account fromAccount = accountRepository.findById(fromAccountId)
+                .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+        Account toAccount = accountRepository.findById(toAccountId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipient account not found"));
+
+        accountValidator.validateTransferAccounts(fromAccount, toAccount, amount);
+
+        executeTransfer(fromAccount, toAccount, amount);
+    }
+
+    @Transactional
+    public void executeTransferByUser(Long fromUserId, Long toUserId, BigDecimal amount, String fromAccountAlias) throws InsufficientBalanceException {
+        Account fromAccount = accountRepository.findMainAccountByUserId(fromUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+        Account toAccount = accountRepository.findMainAccountByUserId(toUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipient account not found"));
+
+        accountValidator.validateTransferAccounts(fromAccount, toAccount, amount);
+
+        executeTransfer(fromAccount, toAccount, amount, fromAccountAlias);
+    }
+
+    @Transactional
+    public void executeTransferByUser(Long fromUserId, Long toUserId, BigDecimal amount) throws InsufficientBalanceException {
         Account fromAccount = accountRepository.findMainAccountByUserId(fromUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
         Account toAccount = accountRepository.findMainAccountByUserId(toUserId)
@@ -120,10 +219,18 @@ public class TransferService {
 
     // 같은 레벨의 SERIALIZABLE임에도 최대한 트랜잭션을 짧게 가져갈 수 있도록 구상해 봅시다.
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public void executeTransfer(Account fromAccount, Account toAccount, BigDecimal amount) {
+    public void executeTransfer(Account fromAccount, Account toAccount, BigDecimal amount, String fromAccountAlias) {
         toAccount.deposit(amount); // +
         fromAccount.withdraw(amount); // -
 
+        // 트랜잭션 컨텍스트에서 업데이트를 수행할 때 버전 필드가 자동으로 확인됩니다.
+        transactionalService.logTransaction(fromAccount.getId(), toAccount.getId(), amount, fromAccountAlias);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
+    public void executeTransfer(Account fromAccount, Account toAccount, BigDecimal amount) {
+        toAccount.deposit(amount); // +
+        fromAccount.withdraw(amount); // -
 
         // 트랜잭션 컨텍스트에서 업데이트를 수행할 때 버전 필드가 자동으로 확인됩니다.
         transactionalService.logTransaction(fromAccount.getId(), toAccount.getId(), amount);

@@ -37,7 +37,7 @@ public class Token {
     @Column(nullable = false, unique = true)
     private String token;
 
-    // 추후 redis 이용시 적용 가능?
+    // 추후 redis 이용시 적용 가능!
     // Package org.springframework.data.redis.core
     // 만료 기간을 설정해주는 어노테이션
 //    @TimeToLive(unit = TimeUnit.SECONDS)
@@ -50,6 +50,5 @@ public class Token {
 
     public enum TokenType {
         REFRESH, OTHER // Flexibility to add more types
-//        ACCESS,
     }
 }

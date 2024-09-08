@@ -19,6 +19,7 @@ import static org.c4marathon.assignment.util.JwtConst.*;
 
 
 @Slf4j
+// 토큰의 유효성 검사를 책임지는 필터 클래스
 public class JwtAuthenticationFilter extends GenericFilterBean {
 
     private final JwtProvider jwtProvider;
@@ -34,7 +35,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         String token = resolveToken((HttpServletRequest) request);
         System.out.println("token = " + token);
         // 2. validateToken 으로 토큰 유효성 검사
-        // 이게 제공자 쪽 클래스에서 나오는게 맞나?
+        // 이게 제공자 쪽 클래스에서 나오는게 맞나 -> 인증을 만들어주는 곳이니 검증도 같이 해주면 좋을듯.
 
         if (token != null && jwtProvider.validateToken(token)) {
             // 토큰이 유효할 경우 토큰 에서 Authentication 객체를 가지고 와서 SecurityContext 에 저장

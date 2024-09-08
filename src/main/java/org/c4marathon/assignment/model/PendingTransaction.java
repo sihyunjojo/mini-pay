@@ -17,6 +17,19 @@ public class PendingTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private BigDecimal amount;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime expiresAt;
+    // 알림을 보냈는 여부를 나타내는 플래그
+    @Column(nullable = false)
+    private boolean reminded = false;
+
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "from_account_id")
@@ -26,13 +39,5 @@ public class PendingTransaction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_account_id")
     private Account toAccount;
-
-    private BigDecimal amount;
-    private LocalDateTime createdAt;
-    private LocalDateTime expiresAt;
-    // 알림을 보냈는 여부를 나타내는 플래그
-    private boolean reminded = false;
-
-
 }
 

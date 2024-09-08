@@ -17,7 +17,11 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private Long fromAccountId;
+
+    @Column(nullable = false)
     private Long toAccountId;
 
     @Column(nullable = false)
@@ -25,6 +29,8 @@ public class Transaction {
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
+
+    private String fromAccountAlias;
 
     public Transaction(Long fromAccountId, Long toAccountId, BigDecimal amount) {
         this.fromAccountId = fromAccountId;

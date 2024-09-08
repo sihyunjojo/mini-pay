@@ -28,7 +28,10 @@ import java.util.function.Function;
 public class CustomUser implements CustomUserDetails, CredentialsContainer {
 
 
-    @Serial // 뭐하는 어노테이션 이지??
+
+
+    @Serial // 직렬화 관련 메서드를 명시적으로 만들고 사용자 정의 직렬화 논리와 관련된 코드의 가독성과 유지 관리성을 향상시키는 데 유용한 Java 도구
+    //    serialVersionUID는 직렬화된 클래스 버전을 식별하는 데 사용됩니다. 이 값은 클래스의 구조가 변경되었을 때 변경됩니다. 이 값을 변경하면 이전에 직렬화된 객체를 역직렬화 할 수 없게 됩니다.
     private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
 
     private static final Log logger = LogFactory.getLog(User.class);

@@ -13,14 +13,13 @@ public class PendingTransactionScheduler {
 
     private final PendingTransactionService pendingTransactionService;
 
-    // 24시간 남은 트랜잭션에 알림 전송 (매시간 실행)
-    @Scheduled(fixedRate = 3600000) // 1시간마다 실행
+    @Scheduled(fixedDelay = 3600000 * 48) // 48시간 이후 실행
     public void sendReminders() {
         pendingTransactionService.sendReminders();
     }
 
-    // 만료된 트랜잭션 처리 (매시간 실행)
-    @Scheduled(fixedRate = 3600000) // 1시간마다 실행
+    // 만료된 트랜잭션 처리
+    @Scheduled(fixedDelay = 3600000 * 72) // 72시간 이후 실행
     public void expirePendingTransactions() {
         pendingTransactionService.expirePendingTransactions();
     }

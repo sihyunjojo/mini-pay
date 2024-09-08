@@ -1,0 +1,9 @@
+FROM openjdk:11-slim
+#FROM openjdk:17-jdk
+
+ARG WAR_FILE=./*war
+COPY ${WAR_FILE} app.war
+
+EXPOSE 8300
+
+ENTRYPOINT ["sh", "-c", "java -jar /app.war --controller-port=${SERVER_PORT}"]
