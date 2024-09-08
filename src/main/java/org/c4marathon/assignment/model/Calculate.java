@@ -23,14 +23,14 @@ public class Calculate {
 
     // 본인은 냈음.
     @Column(nullable = false)
-    private int numberOfIsCalculated = 1;
+    private int numberOfIsCalculated;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "calculate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PersonalCalculate> personalCalculate;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     private Account fromAccount;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "calculate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PersonalCalculate> personalCalculate;
 }

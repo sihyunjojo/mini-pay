@@ -15,7 +15,9 @@ public class InterestScheduler {
 
     public final InterestService interestService;
 
-    @Scheduled(cron = "0 0 4 * * ?") // 매일 오전 4시에 실행
+    // 초 분 시 일 월 요일
+    @Transactional
+    @Scheduled(cron = "30 * * * * ?") // 매일 오전 4시에 실행
     public void dailyApplyInterest(){
         // 모든 계좌를 가져와서 이자를 계산하고 적용
         interestService.applyInterest();
